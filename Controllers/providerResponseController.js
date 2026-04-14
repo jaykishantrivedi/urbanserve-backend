@@ -61,16 +61,30 @@ export const sendRequestToProviders = async (req, res) => {
             })
 
             if (existing) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Request already sent to this provider"
+                if (existing.status === "pending") {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Request already sent. Waiting for provider to respond."
+                    })
+                }
+                if (existing.status === "accepted") {
+                    return res.status(400).json({
+                        success: false,
+                        message: "This provider has already accepted the request."
+                    })
+                }
+                // status === "declined" — reset so provider gets notified again
+                existing.status = "pending"
+                existing.message = undefined
+                existing.price = null
+                existing.respondedAt = undefined
+                await existing.save()
+            } else {
+                await providerResponseModel.create({
+                    serviceRequest: requestId,
+                    provider: providerId
                 })
             }
-
-            const response = await providerResponseModel.create({
-                serviceRequest: requestId,
-                provider: providerId
-            })
 
             await sendNotification(
                 "provider",
@@ -118,32 +132,59 @@ export const sendRequestToProviders = async (req, res) => {
 
         const existingResponses = await providerResponseModel
             .find({ serviceRequest: requestId })
-            .select("provider")
+            .select("provider status")
 
-        const existingProviderIds = existingResponses.map(r =>
-            r.provider.toString()
+        // Only block providers with a pending or accepted response
+        const blockedProviderIds = existingResponses
+            .filter(r => r.status === "pending" || r.status === "accepted")
+            .map(r => r.provider.toString())
+
+        // Declined providers can be re-contacted
+        const declinedProviderIds = existingResponses
+            .filter(r => r.status === "declined")
+            .map(r => r.provider.toString())
+
+        const brandNewProviders = providers.filter(
+            id => !blockedProviderIds.includes(id.toString()) &&
+                  !declinedProviderIds.includes(id.toString())
         )
 
-        const newProviders = providers.filter(
-            id => !existingProviderIds.includes(id.toString())
+        const reContactProviders = providers.filter(
+            id => declinedProviderIds.includes(id.toString())
         )
 
-        if (!newProviders.length) {
+        if (!brandNewProviders.length && !reContactProviders.length) {
             return res.status(400).json({
                 success: false,
                 message: "Request already sent to all available providers"
             })
         }
 
-        const responses = newProviders.map(providerId => ({
-            serviceRequest: requestId,
-            provider: providerId
-        }))
+        if (brandNewProviders.length) {
+            const newResponseDocs = brandNewProviders.map(providerId => ({
+                serviceRequest: requestId,
+                provider: providerId
+            }))
+            await providerResponseModel.insertMany(newResponseDocs)
+        }
 
-        await providerResponseModel.insertMany(responses)
+        if (reContactProviders.length) {
+            await providerResponseModel.updateMany(
+                {
+                    serviceRequest: requestId,
+                    provider: { $in: reContactProviders },
+                    status: "declined"
+                },
+                {
+                    $set: { status: "pending", message: null, price: null, respondedAt: null }
+                }
+            )
+        }
+
+        const allContactedProviders = [...brandNewProviders, ...reContactProviders]
 
         await Promise.all(
-            newProviders.map(providerId=>
+            allContactedProviders.map(providerId =>
                 sendNotification(
                     "provider",
                     providerId,
@@ -157,7 +198,7 @@ export const sendRequestToProviders = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Request sent to providers successfully",
-            totalSent: responses.length
+            totalSent: allContactedProviders.length
         })
 
 
