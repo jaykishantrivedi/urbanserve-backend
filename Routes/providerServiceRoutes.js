@@ -1,7 +1,7 @@
 import express from "express"
 import { protect } from "../middleware/authMiddleware.js"
 import { providerOnly } from "../middleware/providerOnly.js"
-import { createProviderService, deleteProviderService, getAllProviderService, getAllProviderServiceForUser, getProviderServivceById, toggleProviderServiceStatus, updateProviderService } from "../controllers/providerServiceController.js"
+import { createProviderService, deleteProviderService, getAllProviderService, getAllProviderServiceForUser, getProviderServivceById, toggleProviderServiceStatus, updateProviderService } from "../Controllers/providerServiceController.js"
 
 export const providerServiceRoutes = express.Router()
 
