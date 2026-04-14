@@ -469,13 +469,6 @@ export const chooseProvider = async (req, res) => {
         }
 
         const requestId = response.serviceRequest._id
-
-        // const existingBooking = await bookingModel
-        //         serviceDate: response.serviceRequest.preferredDate,
-        //         serviceTime: response.serviceRequest.preferredTime,
-        
-
-        //         message: "Provider already has a booking at this time"
         
         response.status = "accepted"
         await response.save({session})

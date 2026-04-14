@@ -1,35 +1,35 @@
 import { userModel } from "../models/userModel.js"
 import { bookingModel } from "../models/bookingModel.js"
 
-// ── GET ALL USERS (admin, paginated, searchable, filterable) ──────────
+// GET ALL USERS (admin, paginated, searchable, filterable)
 export const getAdminUsers = async (req, res) => {
     try {
         const {
-            page     = 1,
-            limit    = 10,
-            search   = "",
-            status   = "all",  // "all" | "active" | "blocked"
+            page = 1,
+            limit = 10,
+            search = "",
+            status = "all",  // "all" | "active" | "blocked"
         } = req.query
 
-        const pageNum  = Math.max(1, parseInt(page))
+        const pageNum = Math.max(1, parseInt(page))
         const limitNum = Math.min(100, Math.max(1, parseInt(limit)))
 
         const filter = { role: "user", isDeleted: false }
 
         if (search.trim()) {
             filter.$or = [
-                { name:  { $regex: search.trim(), $options: "i" } },
+                { name: { $regex: search.trim(), $options: "i" } },
                 { email: { $regex: search.trim(), $options: "i" } },
             ]
         }
 
-        if (status === "active")  filter.isBlocked = false
+        if (status === "active") filter.isBlocked = false
         if (status === "blocked") filter.isBlocked = true
 
-        const now           = new Date()
+        const now = new Date()
         const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
         const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
 
         const [users, total, totalAll, totalActive, totalBlocked, newThisMonth, newLastMonth] =
             await Promise.all([
@@ -61,7 +61,7 @@ export const getAdminUsers = async (req, res) => {
 
         const enriched = users.map(u => ({
             ...u,
-            status:   u.isBlocked ? "blocked" : "active",
+            status: u.isBlocked ? "blocked" : "active",
             bookings: bookingMap[u._id.toString()] || 0,
         }))
 
@@ -74,16 +74,16 @@ export const getAdminUsers = async (req, res) => {
             users: enriched,
             pagination: {
                 total,
-                page:       pageNum,
-                limit:      limitNum,
+                page: pageNum,
+                limit: limitNum,
                 totalPages: Math.ceil(total / limitNum),
             },
             kpis: {
-                totalUsers:    totalAll,
-                activeUsers:   totalActive,
-                blockedUsers:  totalBlocked,
+                totalUsers: totalAll,
+                activeUsers: totalActive,
+                blockedUsers: totalBlocked,
                 newThisMonth,
-                newPctChange:  newPct,
+                newPctChange: newPct,
             },
         })
     } catch (error) {
@@ -91,7 +91,7 @@ export const getAdminUsers = async (req, res) => {
     }
 }
 
-// ── GET SINGLE USER (admin view) ────────────────────────────────────────
+// GET SINGLE USER (admin view)
 export const getAdminUserById = async (req, res) => {
     try {
         const { userId } = req.params

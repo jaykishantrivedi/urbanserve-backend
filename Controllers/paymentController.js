@@ -12,7 +12,6 @@ const getRazorpay = () => new Razorpay({
     key_secret: process.env.RAZORPAY_SECRET
 })
 
-// ──────────────────────────────────────────────────────────
 const computeSplit = async (amount) => {
     const settings = await adminSettingModel.findOne()
     const commissionPct = settings ? settings.platformCommission : 10
@@ -21,7 +20,6 @@ const computeSplit = async (amount) => {
     return { commissionPct, adminAmount, providerAmount }
 }
 
-// ──────────────────────────────────────────────────────────
 // CREATE RAZORPAY ORDER (online payment)
 export const createPaymentOrder = async (req, res) => {
     try {
@@ -89,7 +87,6 @@ export const createPaymentOrder = async (req, res) => {
     }
 }
 
-// ──────────────────────────────────────────────────────────
 // VERIFY RAZORPAY PAYMENT + mark booking completed
 export const verifyRazorpayPayment = async (req, res) => {
     try {
@@ -147,7 +144,6 @@ export const verifyRazorpayPayment = async (req, res) => {
     }
 }
 
-// ──────────────────────────────────────────────────────────
 // CASH PAYMENT — immediately mark as paid & complete
 export const createCashPayment = async (req, res) => {
     try {
@@ -220,7 +216,6 @@ export const createCashPayment = async (req, res) => {
     }
 }
 
-// ──────────────────────────────────────────────────────────
 export const getUserPayments = async (req, res) => {
     try {
         const userId = req.user.userId
@@ -243,7 +238,6 @@ export const getUserPayments = async (req, res) => {
     }
 }
 
-// ──────────────────────────────────────────────────────────
 export const getProviderPayments = async (req, res) => {
     try {
         const userId = req.user.userId
@@ -269,7 +263,6 @@ export const getProviderPayments = async (req, res) => {
     }
 }
 
-// ──────────────────────────────────────────────────────────
 export const getPaymentById = async (req, res) => {
     try {
         const userId = req.user.userId

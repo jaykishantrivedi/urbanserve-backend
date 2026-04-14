@@ -1,32 +1,31 @@
 import { notificationModel } from "../models/notificationModel.js"
 import mongoose from "mongoose"
 
-// ── GET ALL NOTIFICATIONS (admin, paginated, searchable, filterable) ───
+// GET ALL NOTIFICATIONS (admin, paginated, searchable, filterable)
 export const getAdminNotifications = async (req, res) => {
     try {
         const {
-            page   = 1,
-            limit  = 10,
+            page = 1,
+            limit = 10,
             search = "",
-            type   = "all",
+            type = "all",
             status = "all", // "all" | "read" | "unread"
         } = req.query
 
-        const pageNum  = Math.max(1, parseInt(page))
+        const pageNum = Math.max(1, parseInt(page))
         const limitNum = Math.min(100, Math.max(1, parseInt(limit)))
 
         const pipelineMatch = []
-        
-        // Reverse map UI type values to backend enums if necessary, since UI sends literal strings
+
         const typeMapping = {
-            "Service Request":   "service_request",
+            "Service Request": "service_request",
             "Provider Response": "provider_response",
             "Booking Confirmed": "booking_confirmed",
             "Service Completed": "service_completed",
-            "Payment Received":  "payment_received",
-            "New Review":        "new_review"
+            "Payment Received": "payment_received",
+            "New Review": "new_review"
         }
-        
+
         if (type !== "all") {
             const mappedType = typeMapping[type] || type
             pipelineMatch.push({ $match: { type: mappedType } })
@@ -39,21 +38,20 @@ export const getAdminNotifications = async (req, res) => {
         const pipeline = [
             ...pipelineMatch,
 
-            // RefPath is recipientType ("user" or "provider").
-            // We can do two left joins and coalesce them
-            { $lookup: { from: "users",            localField: "recipient", foreignField: "_id", as: "userDoc" } },
+
+            { $lookup: { from: "users", localField: "recipient", foreignField: "_id", as: "userDoc" } },
             { $lookup: { from: "serviceproviders", localField: "recipient", foreignField: "_id", as: "providerDoc" } },
-            
-            { $unwind: { path: "$userDoc",     preserveNullAndEmptyArrays: true } },
+
+            { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$providerDoc", preserveNullAndEmptyArrays: true } },
 
             ...(search.trim()
                 ? [{
                     $match: {
                         $or: [
-                            { title:                      { $regex: search.trim(), $options: "i" } },
-                            { message:                    { $regex: search.trim(), $options: "i" } },
-                            { "userDoc.name":             { $regex: search.trim(), $options: "i" } },
+                            { title: { $regex: search.trim(), $options: "i" } },
+                            { message: { $regex: search.trim(), $options: "i" } },
+                            { "userDoc.name": { $regex: search.trim(), $options: "i" } },
                             { "providerDoc.businessName": { $regex: search.trim(), $options: "i" } },
                         ]
                     }
@@ -62,11 +60,11 @@ export const getAdminNotifications = async (req, res) => {
 
             {
                 $project: {
-                    _id:           1,
-                    title:         1,
-                    message:       1,
-                    type:          1,
-                    isRead:        1,
+                    _id: 1,
+                    title: 1,
+                    message: 1,
+                    type: 1,
+                    isRead: 1,
                     recipientType: { $ifNull: ["$recipientType", "user"] },
                     recipientName: {
                         $cond: [
@@ -81,10 +79,10 @@ export const getAdminNotifications = async (req, res) => {
             { $sort: { date: -1 } }
         ]
 
-        const dataPipeline  = [...pipeline, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]
+        const dataPipeline = [...pipeline, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]
         const countPipeline = [...pipeline, { $count: "total" }]
 
-        // KPI query across absolute collection (ignoring search queries but matching collection totals)
+
         const [notifications, countResult, globalStats] = await Promise.all([
             notificationModel.aggregate(dataPipeline),
             notificationModel.aggregate(countPipeline),
@@ -92,9 +90,9 @@ export const getAdminNotifications = async (req, res) => {
                 {
                     $group: {
                         _id: null,
-                        totalNotifications:    { $sum: 1 },
-                        unreadNotifications:   { $sum: { $cond: [{ $eq: ["$isRead", false] }, 1, 0] } },
-                        userNotifications:     { $sum: { $cond: [{ $eq: ["$recipientType", "user"] }, 1, 0] } },
+                        totalNotifications: { $sum: 1 },
+                        unreadNotifications: { $sum: { $cond: [{ $eq: ["$isRead", false] }, 1, 0] } },
+                        userNotifications: { $sum: { $cond: [{ $eq: ["$recipientType", "user"] }, 1, 0] } },
                         providerNotifications: { $sum: { $cond: [{ $eq: ["$recipientType", "provider"] }, 1, 0] } },
                     }
                 }
@@ -106,12 +104,12 @@ export const getAdminNotifications = async (req, res) => {
 
         // Map backend types to frontend readable format
         const reverseTypeMap = {
-            "service_request":   "Service Request",
+            "service_request": "Service Request",
             "provider_response": "Provider Response",
             "booking_confirmed": "Booking Confirmed",
             "service_completed": "Service Completed",
-            "payment_received":  "Payment Received",
-            "new_review":        "New Review"
+            "payment_received": "Payment Received",
+            "new_review": "New Review"
         }
 
         const formattedNotifications = notifications.map(n => ({
@@ -130,14 +128,14 @@ export const getAdminNotifications = async (req, res) => {
             notifications: formattedNotifications,
             pagination: {
                 total,
-                page:       pageNum,
-                limit:      limitNum,
+                page: pageNum,
+                limit: limitNum,
                 totalPages: Math.ceil(total / limitNum) || 1,
             },
             kpis: {
-                totalNotifications:    stats.totalNotifications || 0,
-                unreadNotifications:   stats.unreadNotifications || 0,
-                userNotifications:     stats.userNotifications || 0,
+                totalNotifications: stats.totalNotifications || 0,
+                unreadNotifications: stats.unreadNotifications || 0,
+                userNotifications: stats.userNotifications || 0,
                 providerNotifications: stats.providerNotifications || 0,
             }
         })
@@ -146,7 +144,7 @@ export const getAdminNotifications = async (req, res) => {
     }
 }
 
-// ── TOGGLE NOTIFICATION STATUS (Read / Unread) ──────────────────────────
+// TOGGLE NOTIFICATION STATUS (Read / Unread)
 export const adminToggleNotificationStatus = async (req, res) => {
     try {
         const { notificationId } = req.params
@@ -157,16 +155,16 @@ export const adminToggleNotificationStatus = async (req, res) => {
         notification.isRead = !notification.isRead
         await notification.save()
 
-        return res.status(200).json({ 
-            success: true, 
-            message: `Notification marked as ${notification.isRead ? 'read' : 'unread'}` 
+        return res.status(200).json({
+            success: true,
+            message: `Notification marked as ${notification.isRead ? 'read' : 'unread'}`
         })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message })
     }
 }
 
-// ── DELETE NOTIFICATION (Admin only) ──────────────────────────────────
+// DELETE NOTIFICATION (Admin only)
 export const adminDeleteNotification = async (req, res) => {
     try {
         const { notificationId } = req.params

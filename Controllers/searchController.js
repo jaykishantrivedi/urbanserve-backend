@@ -56,8 +56,6 @@ export const searchProviders = async (req, res) => {
         }
 
         if (priceType) {
-            // Map our UI priceType to the backend priceType if needed. UI: "Fixed", "Hourly", "Inspection"
-            // The schemas usually expect lowercase: "fixed", "hourly", "inspection"
             providerServiceQuery.priceType = priceType.toLowerCase()
         }
 

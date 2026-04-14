@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit"
 
-// ─── Shared JSON error handler ─────────────────────────────────────────────
+//  Shared JSON error handler 
 // Returns a clean JSON 429 instead of Express's default HTML response
 const jsonHandler = (req, res) => {
     return res.status(429).json({
@@ -9,7 +9,7 @@ const jsonHandler = (req, res) => {
     })
 }
 
-// ─── Auth Limiter ──────────────────────────────────────────────────────────
+//  Auth Limiter 
 // Protects: signup, signin, forgot-password, reset-password, googleAuth
 // Allows 20 attempts per 15 minutes per IP
 export const authLimiter = rateLimit({
@@ -20,7 +20,7 @@ export const authLimiter = rateLimit({
     handler: jsonHandler
 })
 
-// ─── OTP Limiter ───────────────────────────────────────────────────────────
+//  OTP Limiter 
 // Allows only 5 OTP requests per 10 minutes per IP
 export const otpLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,  // 10 minutes

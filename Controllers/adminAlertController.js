@@ -1,6 +1,6 @@
 import { adminAlertModel } from "../models/adminAlertModel.js"
 
-// ── GET all admin alerts (most recent 20, unread first) ─────────────────────
+//  GET all admin alerts (most recent 20, unread first) 
 export const getAdminAlerts = async (req, res) => {
     try {
         const alerts = await adminAlertModel
@@ -21,7 +21,7 @@ export const getAdminAlerts = async (req, res) => {
     }
 }
 
-// ── MARK single alert as read ───────────────────────────────────────────────
+//  MARK single alert as read 
 export const markAdminAlertRead = async (req, res) => {
     try {
         const { alertId } = req.params
@@ -42,7 +42,7 @@ export const markAdminAlertRead = async (req, res) => {
     }
 }
 
-// ── MARK ALL alerts as read ─────────────────────────────────────────────────
+//  MARK ALL alerts as read 
 export const markAllAdminAlertsRead = async (req, res) => {
     try {
         await adminAlertModel.updateMany({ isRead: false }, { isRead: true })
@@ -52,7 +52,7 @@ export const markAllAdminAlertsRead = async (req, res) => {
     }
 }
 
-// ── Helper: create an alert (used internally by other controllers) ──────────
+//  Helper: create an alert (used internally by other controllers) 
 export const createAdminAlert = async ({ type, title, message, refId = null, refModel = null }) => {
     try {
         await adminAlertModel.create({ type, title, message, refId, refModel })

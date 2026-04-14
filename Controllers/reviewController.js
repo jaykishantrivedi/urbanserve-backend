@@ -7,9 +7,6 @@ import mongoose from "mongoose"
 const calculateAverageRating = (starCount, totalReviews) => {
     if (totalReviews === 0) return 0
 
-    
-    // array.reduce((accumulator, currentValue) => {
-
     const totalStars = Object.entries(starCount).reduce((acc, [star, count]) => acc + Number(star) * count, 0)
 
     return totalStars/totalReviews

@@ -1,16 +1,16 @@
 import { reviewModel } from "../models/reviewModel.js"
 
-// ── GET ALL REVIEWS (admin, paginated, searchable, filterable) ─────────
+// GET ALL REVIEWS (admin, paginated, searchable, filterable)
 export const getAdminReviews = async (req, res) => {
     try {
         const {
-            page   = 1,
-            limit  = 10,
+            page = 1,
+            limit = 10,
             search = "",
             rating = "all", // "all" | "5" | "4" | "3" | "2" | "1"
         } = req.query
 
-        const pageNum  = Math.max(1, parseInt(page))
+        const pageNum = Math.max(1, parseInt(page))
         const limitNum = Math.min(100, Math.max(1, parseInt(limit)))
 
         const pipelineMatch = []
@@ -21,22 +21,22 @@ export const getAdminReviews = async (req, res) => {
         const pipeline = [
             ...pipelineMatch,
 
-            { $lookup: { from: "users",            localField: "user",     foreignField: "_id", as: "userDoc" } },
+            { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "userDoc" } },
             { $lookup: { from: "serviceproviders", localField: "provider", foreignField: "_id", as: "providerDoc" } },
-            { $lookup: { from: "services",         localField: "service",  foreignField: "_id", as: "serviceDoc" } },
-            
-            { $unwind: { path: "$userDoc",     preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: "services", localField: "service", foreignField: "_id", as: "serviceDoc" } },
+
+            { $unwind: { path: "$userDoc", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$providerDoc", preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: "$serviceDoc",  preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$serviceDoc", preserveNullAndEmptyArrays: true } },
 
             ...(search.trim()
                 ? [{
                     $match: {
                         $or: [
-                            { "userDoc.name":             { $regex: search.trim(), $options: "i" } },
+                            { "userDoc.name": { $regex: search.trim(), $options: "i" } },
                             { "providerDoc.businessName": { $regex: search.trim(), $options: "i" } },
-                            { "serviceDoc.serviceName":   { $regex: search.trim(), $options: "i" } },
-                            { "review":                   { $regex: search.trim(), $options: "i" } },
+                            { "serviceDoc.serviceName": { $regex: search.trim(), $options: "i" } },
+                            { "review": { $regex: search.trim(), $options: "i" } },
                         ]
                     }
                 }]
@@ -44,20 +44,20 @@ export const getAdminReviews = async (req, res) => {
 
             {
                 $project: {
-                    _id:      1,
-                    booking:  1,
-                    rating:   1,
-                    review:   1,
-                    user:     "$userDoc.name",
+                    _id: 1,
+                    booking: 1,
+                    rating: 1,
+                    review: 1,
+                    user: "$userDoc.name",
                     provider: "$providerDoc.businessName",
-                    service:  "$serviceDoc.serviceName",
-                    date:     "$createdAt"
+                    service: "$serviceDoc.serviceName",
+                    date: "$createdAt"
                 }
             },
             { $sort: { date: -1 } }
         ]
 
-        const dataPipeline  = [...pipeline, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]
+        const dataPipeline = [...pipeline, { $skip: (pageNum - 1) * limitNum }, { $limit: limitNum }]
         const countPipeline = [...pipeline, { $count: "total" }]
 
         // We run isolated KPI query so it ignores search query/pagination limits and calculates global stats
@@ -86,10 +86,10 @@ export const getAdminReviews = async (req, res) => {
         const stats = globalStats[0] || {}
 
         const kpis = {
-            totalReviews:    stats.totalReviews || 0,
-            averageRating:   stats.totalReviews ? (stats.totalRatingSum / stats.totalReviews).toFixed(1) : "0.0",
+            totalReviews: stats.totalReviews || 0,
+            averageRating: stats.totalReviews ? (stats.totalRatingSum / stats.totalReviews).toFixed(1) : "0.0",
             fiveStarReviews: stats.fiveStarReviews || 0,
-            lowRatings:      stats.lowRatings || 0,
+            lowRatings: stats.lowRatings || 0,
             ratingDistribution: [
                 { rating: 5, count: stats.count5 || 0, percentage: stats.totalReviews ? ((stats.count5 / stats.totalReviews) * 100).toFixed(0) : 0 },
                 { rating: 4, count: stats.count4 || 0, percentage: stats.totalReviews ? ((stats.count4 / stats.totalReviews) * 100).toFixed(0) : 0 },
@@ -104,8 +104,8 @@ export const getAdminReviews = async (req, res) => {
             reviews,
             pagination: {
                 total,
-                page:       pageNum,
-                limit:      limitNum,
+                page: pageNum,
+                limit: limitNum,
                 totalPages: Math.ceil(total / limitNum) || 1,
             },
             kpis,
@@ -115,7 +115,7 @@ export const getAdminReviews = async (req, res) => {
     }
 }
 
-// ── DELETE REVIEW (Admin only) ─────────────────────────────────────────
+// DELETE REVIEW (Admin only)
 export const adminDeleteReview = async (req, res) => {
     try {
         const { reviewId } = req.params

@@ -407,7 +407,7 @@ export const verifyPhoneOtp = async (req, res) => {
     }
 }
 
-// ------------------- EMAIL CHANGE OTP -------------------
+// EMAIL CHANGE OTP
 
 export const sendEmailChangeOtp = async (req, res) => {
     try {
@@ -678,8 +678,8 @@ export const login = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                pfpUrl: user.pfpUrl || null,   // ← added
-                role: user.role                 // ← added
+                pfpUrl: user.pfpUrl || null,
+                role: user.role
             }
         })
     } catch (error) {
@@ -708,7 +708,7 @@ export const logout = async (req, res) => {
             )
         }
 
-        // Clear access token cookie (was missing — caused token to persist after logout)
+        // Clear access token cookie
         res.clearCookie("token", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -762,7 +762,7 @@ export const forgotPassword = async (req, res) => {
 
         const resetToken = crypto.randomBytes(32).toString("hex")
 
-        // 2️⃣ Hash token before saving (VERY IMPORTANT)
+        // Hash token before saving
         const hashedToken = crypto
             .createHash("sha256")
             .update(resetToken)
@@ -961,7 +961,7 @@ export const refreshTokenController = async (req, res) => {
             { expiresIn: "15m" }
         )
 
-        // 3b️⃣ Set new access token as httpOnly cookie
+        // Set new access token as httpOnly cookie
         res.cookie("token", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -995,16 +995,6 @@ export const refreshTokenController = async (req, res) => {
     }
 }
 
-//         const email = req.body.email?.toLowerCase().trim()
-
-//                 message: "Name, email and profile picture are required"
-
-//         const user = await userModel.findOne({email})
-
-
-//         const accessToken = await generateTokens(user, res)
-
-
 
 export const googleAuth = async (req, res) => {
     try {
@@ -1018,7 +1008,7 @@ export const googleAuth = async (req, res) => {
             })
         }
 
-        let user = await userModel.findOne({ email })   // ← added let (was const, caused bug)
+        let user = await userModel.findOne({ email })
 
         if (!user) {
             user = await userModel.create({
@@ -1039,8 +1029,8 @@ export const googleAuth = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                pfpUrl: user.pfpUrl || null,   // ← added
-                role: user.role                 // ← added
+                pfpUrl: user.pfpUrl || null,
+                role: user.role
             }
         })
 

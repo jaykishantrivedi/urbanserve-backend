@@ -1,6 +1,6 @@
 import { adminSettingModel } from "../models/adminSettingModel.js"
 
-// ── GET ADMIN SETTINGS ────────────────────────────────────────────────
+// GET ADMIN SETTINGS
 export const getAdminSettings = async (req, res) => {
     try {
         let settings = await adminSettingModel.findOne()
@@ -16,7 +16,7 @@ export const getAdminSettings = async (req, res) => {
     }
 }
 
-// ── UPDATE ADMIN SETTINGS ─────────────────────────────────────────────
+// UPDATE ADMIN SETTINGS
 export const updateAdminSettings = async (req, res) => {
     try {
         const updates = req.body

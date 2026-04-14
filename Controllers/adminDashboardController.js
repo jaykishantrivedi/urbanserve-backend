@@ -5,17 +5,17 @@ import { paymentModel } from "../models/paymentModel.js"
 import { serviceModel } from "../models/serviceModel.js"
 import { serviceCategoryModel } from "../models/serviceCategoryModel.js"
 
-// ── Helpers ──────────────────────────────────────────────────────────
+// Helpers 
 const startOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1)
-const endOfMonth   = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
+const endOfMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
 
-// ── GET DASHBOARD KPIs ────────────────────────────────────────────────
+// GET DASHBOARD KPIs 
 export const getDashboardKPIs = async (req, res) => {
     try {
         const now = new Date()
         const thisMonthStart = startOfMonth(now)
         const lastMonthStart = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1))
-        const lastMonthEnd   = endOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1))
+        const lastMonthEnd = endOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1))
 
         const [
             totalUsers,
@@ -57,10 +57,10 @@ export const getDashboardKPIs = async (req, res) => {
             ]),
         ])
 
-        const totalRevenue       = revenueAgg[0]?.total || 0
-        const adminEarnings      = revenueAgg[0]?.adminEarnings || 0
-        const revenueLastMonth   = revenueLastMonthAgg[0]?.total || 0
-        const revenueThisMonth   = revenueThisMonthAgg[0]?.total || 0
+        const totalRevenue = revenueAgg[0]?.total || 0
+        const adminEarnings = revenueAgg[0]?.adminEarnings || 0
+        const revenueLastMonth = revenueLastMonthAgg[0]?.total || 0
+        const revenueThisMonth = revenueThisMonthAgg[0]?.total || 0
 
         const pct = (curr, prev) => prev === 0 ? null : (((curr - prev) / prev) * 100).toFixed(1)
 
@@ -92,7 +92,7 @@ export const getDashboardKPIs = async (req, res) => {
     }
 }
 
-// ── GET BOOKING TRENDS ────────────────────────────────────────────────
+// GET BOOKING TRENDS 
 // variant: "currentMonth" | "last7days" | "last12months"
 export const getBookingTrends = async (req, res) => {
     try {
@@ -132,7 +132,7 @@ export const getBookingTrends = async (req, res) => {
 
         if (variant === "last7days") {
             const days = 7
-            const start = new Date(now); start.setDate(now.getDate() - days + 1); start.setHours(0,0,0,0)
+            const start = new Date(now); start.setDate(now.getDate() - days + 1); start.setHours(0, 0, 0, 0)
             const raw = await bookingModel.aggregate([
                 { $match: { createdAt: { $gte: start } } },
                 {
@@ -149,12 +149,12 @@ export const getBookingTrends = async (req, res) => {
             ])
             const map = {}
             raw.forEach(r => {
-                const key = `${r._id.y}-${String(r._id.m).padStart(2,"0")}-${String(r._id.d).padStart(2,"0")}`
+                const key = `${r._id.y}-${String(r._id.m).padStart(2, "0")}-${String(r._id.d).padStart(2, "0")}`
                 map[key] = r.bookings
             })
             const data = Array.from({ length: days }, (_, i) => {
                 const d = new Date(start); d.setDate(start.getDate() + i)
-                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
                 return {
                     date: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
                     bookings: map[key] || 0
@@ -177,10 +177,10 @@ export const getBookingTrends = async (req, res) => {
             ])
             const map = {}
             raw.forEach(r => { map[`${r._id.y}-${r._id.m}`] = r.bookings })
-            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
             const data = Array.from({ length: 12 }, (_, i) => {
                 const d = new Date(start.getFullYear(), start.getMonth() + i, 1)
-                const key = `${d.getFullYear()}-${d.getMonth()+1}`
+                const key = `${d.getFullYear()}-${d.getMonth() + 1}`
                 return {
                     date: `${months[d.getMonth()]} ${d.getFullYear()}`,
                     bookings: map[key] || 0
@@ -195,7 +195,7 @@ export const getBookingTrends = async (req, res) => {
     }
 }
 
-// ── GET REVENUE TRENDS ─────────────────────────────────────────────────
+// GET REVENUE TRENDS 
 // variant: "currentMonth" | "last7days" | "last12months"
 export const getRevenueTrends = async (req, res) => {
     try {
@@ -217,7 +217,7 @@ export const getRevenueTrends = async (req, res) => {
             ))
             const days = now.getDate()
             const map = Object.fromEntries(raw.map(r => [r._id, r.revenue]))
-            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
             const data = Array.from({ length: days }, (_, i) => ({
                 date: `${months[now.getMonth()]} ${i + 1}`,
                 revenue: map[i + 1] || 0
@@ -227,7 +227,7 @@ export const getRevenueTrends = async (req, res) => {
 
         if (variant === "last7days") {
             const days = 7
-            const start = new Date(now); start.setDate(now.getDate() - days + 1); start.setHours(0,0,0,0)
+            const start = new Date(now); start.setDate(now.getDate() - days + 1); start.setHours(0, 0, 0, 0)
             const raw = await paymentModel.aggregate([
                 { $match: { paymentStatus: "paid", paidAt: { $gte: start } } },
                 {
@@ -244,12 +244,12 @@ export const getRevenueTrends = async (req, res) => {
             ])
             const map = {}
             raw.forEach(r => {
-                const key = `${r._id.y}-${String(r._id.m).padStart(2,"0")}-${String(r._id.d).padStart(2,"0")}`
+                const key = `${r._id.y}-${String(r._id.m).padStart(2, "0")}-${String(r._id.d).padStart(2, "0")}`
                 map[key] = r.revenue
             })
             const data = Array.from({ length: days }, (_, i) => {
                 const d = new Date(start); d.setDate(start.getDate() + i)
-                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
                 return {
                     date: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
                     revenue: map[key] || 0
@@ -267,10 +267,10 @@ export const getRevenueTrends = async (req, res) => {
             ))
             const map = {}
             raw.forEach(r => { map[`${r._id.y}-${r._id.m}`] = r.revenue })
-            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
             const data = Array.from({ length: 12 }, (_, i) => {
                 const d = new Date(start.getFullYear(), start.getMonth() + i, 1)
-                const key = `${d.getFullYear()}-${d.getMonth()+1}`
+                const key = `${d.getFullYear()}-${d.getMonth() + 1}`
                 return {
                     date: `${months[d.getMonth()]} ${d.getFullYear()}`,
                     revenue: map[key] || 0
@@ -285,7 +285,7 @@ export const getRevenueTrends = async (req, res) => {
     }
 }
 
-// ── GET PROVIDER STATUS DISTRIBUTION ─────────────────────────────────
+// GET PROVIDER STATUS DISTRIBUTION 
 export const getProviderStatusDistribution = async (req, res) => {
     try {
         const [active, pending, blocked] = await Promise.all([
@@ -296,7 +296,7 @@ export const getProviderStatusDistribution = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: [
-                { name: "Active",  value: active },
+                { name: "Active", value: active },
                 { name: "Pending", value: pending },
                 { name: "Blocked", value: blocked },
             ]
@@ -306,7 +306,7 @@ export const getProviderStatusDistribution = async (req, res) => {
     }
 }
 
-// ── GET BOOKING STATUS DISTRIBUTION ──────────────────────────────────
+// GET BOOKING STATUS DISTRIBUTION 
 export const getBookingStatusDistribution = async (req, res) => {
     try {
         const result = await bookingModel.aggregate([
@@ -329,7 +329,7 @@ export const getBookingStatusDistribution = async (req, res) => {
     }
 }
 
-// ── GET CATEGORY POPULARITY (Top 5) ──────────────────────────────────
+// GET CATEGORY POPULARITY (Top 5) 
 export const getCategoryPopularity = async (req, res) => {
     try {
         // Aggregate bookings → services → categories

@@ -3,18 +3,18 @@ import { serviceModel } from "../models/serviceModel.js"
 import { serviceCategoryModel } from "../models/serviceCategoryModel.js"
 import { bookingModel } from "../models/bookingModel.js"
 
-// ── GET ALL SERVICES (admin, paginated, searchable, filterable) ────────
+// GET ALL SERVICES (admin, paginated, searchable, filterable)
 export const getAdminServices = async (req, res) => {
     try {
         const {
-            page     = 1,
-            limit    = 10,
-            search   = "",
-            status   = "all",   // "all" | "active" | "inactive"
+            page = 1,
+            limit = 10,
+            search = "",
+            status = "all",   // "all" | "active" | "inactive"
             category = "all",   // "all" | <categoryId>
         } = req.query
 
-        const pageNum  = Math.max(1, parseInt(page))
+        const pageNum = Math.max(1, parseInt(page))
         const limitNum = Math.min(100, Math.max(1, parseInt(limit)))
 
         const filter = {}
@@ -23,7 +23,7 @@ export const getAdminServices = async (req, res) => {
             filter.serviceName = { $regex: search.trim(), $options: "i" }
         }
 
-        if (status === "active")   filter.isActive = true
+        if (status === "active") filter.isActive = true
         if (status === "inactive") filter.isActive = false
 
         if (category && category !== "all") {
@@ -56,15 +56,15 @@ export const getAdminServices = async (req, res) => {
             services,
             pagination: {
                 total,
-                page:       pageNum,
-                limit:      limitNum,
+                page: pageNum,
+                limit: limitNum,
                 totalPages: Math.ceil(total / limitNum) || 1,
             },
             kpis: {
-                totalServices:    totalAll,
-                activeServices:   totalActive,
+                totalServices: totalAll,
+                activeServices: totalActive,
                 inactiveServices: totalInactive,
-                newThisMonth:     thisMonthCount,
+                newThisMonth: thisMonthCount,
             },
         })
     } catch (error) {
@@ -72,7 +72,7 @@ export const getAdminServices = async (req, res) => {
     }
 }
 
-// ── GET CATEGORIES LIST (for filter dropdown) ──────────────────────────
+// GET CATEGORIES LIST (for filter dropdown)
 export const getAdminServiceCategories = async (req, res) => {
     try {
         const categories = await serviceCategoryModel
@@ -87,7 +87,7 @@ export const getAdminServiceCategories = async (req, res) => {
     }
 }
 
-// ── TOGGLE ACTIVE / INACTIVE ──────────────────────────────────────────
+// TOGGLE ACTIVE / INACTIVE
 export const toggleServiceActive = async (req, res) => {
     try {
         const { serviceId } = req.params
@@ -107,7 +107,7 @@ export const toggleServiceActive = async (req, res) => {
     }
 }
 
-// ── DELETE SERVICE (hard delete — admin only) ─────────────────────────
+// DELETE SERVICE (hard delete — admin only)
 export const adminDeleteService = async (req, res) => {
     try {
         const { serviceId } = req.params
@@ -120,7 +120,7 @@ export const adminDeleteService = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message })
     }
 }
-// ── GET SINGLE SERVICE (admin) ────────────────────────────────────────
+// GET SINGLE SERVICE (admin)
 export const getAdminServiceById = async (req, res) => {
     try {
         const { serviceId } = req.params
@@ -139,7 +139,7 @@ export const getAdminServiceById = async (req, res) => {
     }
 }
 
-// ── UPDATE SERVICE (admin) ────────────────────────────────────────────
+// UPDATE SERVICE (admin)
 export const adminUpdateService = async (req, res) => {
     try {
         const { serviceId } = req.params
@@ -164,7 +164,7 @@ export const adminUpdateService = async (req, res) => {
             }
 
             service.serviceName = trimmed
-            service.slug        = newSlug
+            service.slug = newSlug
         }
 
         if (description !== undefined) service.description = description

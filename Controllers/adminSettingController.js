@@ -27,8 +27,6 @@ export const getAdminSettings = async (req, res) => {
 export const updateAdminSettings = async (req, res) => {
     try {
         const { platformCommission, minimumWalletBalance } = req.body
-        
-        // based on existing project structure
 
         let settings = await adminSettingModel.findOne()
         if (!settings) {

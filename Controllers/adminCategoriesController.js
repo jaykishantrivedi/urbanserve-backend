@@ -3,7 +3,7 @@ import { serviceCategoryModel } from "../models/serviceCategoryModel.js"
 import { serviceModel } from "../models/serviceModel.js"
 import { uploadOnCloudinary, deleteOnCloudinary } from "../utils/cloudinary.js"
 
-// ── GET ALL CATEGORIES (admin, paginated, searchable, filterable) ──────
+// GET ALL CATEGORIES (admin, paginated, searchable, filterable) 
 export const getAdminCategories = async (req, res) => {
     try {
         const {
@@ -76,7 +76,7 @@ export const getAdminCategories = async (req, res) => {
     }
 }
 
-// ── GET SINGLE CATEGORY ───────────────────────────────────────────────
+// GET SINGLE CATEGORY 
 export const getAdminCategoryById = async (req, res) => {
     try {
         const { categoryId } = req.params
@@ -132,7 +132,7 @@ export const getAdminCategoryById = async (req, res) => {
     }
 }
 
-// ── UPDATE CATEGORY ────────────────────────────────────────────────────
+// UPDATE CATEGORY 
 export const adminUpdateCategory = async (req, res) => {
     try {
         const { categoryId } = req.params
@@ -174,7 +174,7 @@ export const adminUpdateCategory = async (req, res) => {
     }
 }
 
-// ── TOGGLE ACTIVE / INACTIVE ──────────────────────────────────────────
+// TOGGLE ACTIVE / INACTIVE 
 export const toggleCategoryActive = async (req, res) => {
     try {
         const { categoryId } = req.params
@@ -206,7 +206,7 @@ export const toggleCategoryActive = async (req, res) => {
     }
 }
 
-// ── DELETE CATEGORY (hard delete) ─────────────────────────────────────
+// DELETE CATEGORY (hard delete) 
 export const adminDeleteCategory = async (req, res) => {
     try {
         const { categoryId } = req.params

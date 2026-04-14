@@ -3,17 +3,17 @@ import { bookingModel } from "../models/bookingModel.js"
 import { userModel } from "../models/userModel.js"
 import { providerServiceModel } from "../models/providerServiceModel.js"
 
-// ── GET ALL PROVIDERS (admin, paginated, searchable, filterable) ───────
+// GET ALL PROVIDERS (admin, paginated, searchable, filterable)
 export const getAdminProviders = async (req, res) => {
     try {
         const {
-            page   = 1,
-            limit  = 10,
+            page = 1,
+            limit = 10,
             search = "",
             status = "all",  // "all" | "approved" | "pending" | "blocked"
         } = req.query
 
-        const pageNum  = Math.max(1, parseInt(page))
+        const pageNum = Math.max(1, parseInt(page))
         const limitNum = Math.min(100, Math.max(1, parseInt(limit)))
 
         const filter = { isDeleted: false }
@@ -21,13 +21,13 @@ export const getAdminProviders = async (req, res) => {
         if (search.trim()) {
             filter.$or = [
                 { businessName: { $regex: search.trim(), $options: "i" } },
-                { city:         { $regex: search.trim(), $options: "i" } },
+                { city: { $regex: search.trim(), $options: "i" } },
             ]
         }
 
-        if (status === "approved") { filter.isApproved = true;  filter.isBlocked = false }
-        if (status === "pending")  { filter.isApproved = false; filter.isBlocked = false }
-        if (status === "blocked")  { filter.isBlocked = true }
+        if (status === "approved") { filter.isApproved = true; filter.isBlocked = false }
+        if (status === "pending") { filter.isApproved = false; filter.isBlocked = false }
+        if (status === "blocked") { filter.isBlocked = true }
 
         const [providers, total, totalAll, totalApproved, totalPending, totalBlocked] =
             await Promise.all([
@@ -43,15 +43,15 @@ export const getAdminProviders = async (req, res) => {
                 serviceProviderModel.countDocuments(filter),
 
                 serviceProviderModel.countDocuments({ isDeleted: false }),
-                serviceProviderModel.countDocuments({ isApproved: true,  isBlocked: false, isDeleted: false }),
+                serviceProviderModel.countDocuments({ isApproved: true, isBlocked: false, isDeleted: false }),
                 serviceProviderModel.countDocuments({ isApproved: false, isBlocked: false, isDeleted: false }),
-                serviceProviderModel.countDocuments({ isBlocked: true,   isDeleted: false }),
+                serviceProviderModel.countDocuments({ isBlocked: true, isDeleted: false }),
             ])
 
         const enriched = providers.map(p => ({
             ...p,
-            email:  p.user?.email  || "",
-            phone:  p.user?.phone  || "",
+            email: p.user?.email || "",
+            phone: p.user?.phone || "",
             status: p.isBlocked ? "blocked" : p.isApproved ? "approved" : "pending",
         }))
 
@@ -60,15 +60,15 @@ export const getAdminProviders = async (req, res) => {
             providers: enriched,
             pagination: {
                 total,
-                page:       pageNum,
-                limit:      limitNum,
+                page: pageNum,
+                limit: limitNum,
                 totalPages: Math.ceil(total / limitNum),
             },
             kpis: {
-                totalProviders:   totalAll,
+                totalProviders: totalAll,
                 approvedProviders: totalApproved,
-                pendingProviders:  totalPending,
-                blockedProviders:  totalBlocked,
+                pendingProviders: totalPending,
+                blockedProviders: totalBlocked,
             },
         })
     } catch (error) {
@@ -76,7 +76,7 @@ export const getAdminProviders = async (req, res) => {
     }
 }
 
-// ── GET SINGLE PROVIDER ───────────────────────────────────────────────
+// GET SINGLE PROVIDER
 export const getAdminProviderById = async (req, res) => {
     try {
         const { providerId } = req.params
@@ -100,8 +100,8 @@ export const getAdminProviderById = async (req, res) => {
             success: true,
             provider: {
                 ...provider,
-                email:  provider.user?.email  || "",
-                phone:  provider.user?.phone  || "",
+                email: provider.user?.email || "",
+                phone: provider.user?.phone || "",
                 status: provider.isBlocked ? "blocked" : provider.isApproved ? "approved" : "pending",
             },
             bookingStats: { totalBookings, completed, cancelled, inProgress },
@@ -111,7 +111,7 @@ export const getAdminProviderById = async (req, res) => {
     }
 }
 
-// ── APPROVE PROVIDER ──────────────────────────────────────────────────
+// APPROVE PROVIDER
 export const approveProvider = async (req, res) => {
     try {
         const { providerId } = req.params
@@ -132,7 +132,7 @@ export const approveProvider = async (req, res) => {
     }
 }
 
-// ── TOGGLE BLOCK / UNBLOCK PROVIDER ──────────────────────────────────
+// TOGGLE BLOCK / UNBLOCK PROVIDER
 export const toggleProviderBlock = async (req, res) => {
     try {
         const { providerId } = req.params
@@ -152,7 +152,7 @@ export const toggleProviderBlock = async (req, res) => {
     }
 }
 
-// ── REJECT (pending) PROVIDER ─────────────────────────────────────────
+// REJECT (pending) PROVIDER
 export const rejectProvider = async (req, res) => {
     try {
         const { providerId } = req.params
@@ -171,7 +171,7 @@ export const rejectProvider = async (req, res) => {
     }
 }
 
-// ── GET PROVIDER SERVICES (admin view) ──────────────────────────────
+// GET PROVIDER SERVICES (admin view)
 export const getAdminProviderServices = async (req, res) => {
     try {
         const { providerId } = req.params
