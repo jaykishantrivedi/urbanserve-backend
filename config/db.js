@@ -8,7 +8,6 @@ export const connectDb = async() => {
         await mongoose.connect(process.env.MONGODB_URL,  {
             autoIndex: true
         })
-        console.log(`Connected to database:${mongoose.connection.host}`);
         
     } catch (error) {
         console.log("Db.error: ",error);

@@ -138,7 +138,7 @@ export const verifyOTP = async (req, res) => {
         }
 
         user.isVerified = true,
-            user.verificationToken = undefined
+        user.verificationToken = undefined
         user.verificationTokenExpiresAt = undefined
         user.otpAttempts = 0
 
@@ -688,7 +688,6 @@ export const login = async (req, res) => {
             message: "Error in login API.",
             error: error.message
         })
-        console.log(error)
     }
 }
 
@@ -712,14 +711,14 @@ export const logout = async (req, res) => {
         res.clearCookie("token", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            sameSite: "none"
         })
 
         // Clear refresh token cookie — sameSite must match how it was SET ("lax"), not "strict"
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
+            sameSite: "none"
         })
 
 
@@ -965,7 +964,7 @@ export const refreshTokenController = async (req, res) => {
         res.cookie("token", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 15 * 60 * 1000
         })
 
@@ -977,7 +976,7 @@ export const refreshTokenController = async (req, res) => {
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 

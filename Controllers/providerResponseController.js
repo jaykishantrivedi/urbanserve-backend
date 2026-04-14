@@ -15,9 +15,6 @@ export const sendRequestToProviders = async (req, res) => {
         const { requestId } = req.params
         const { providerId } = req.query || {}
 
-        console.log("RequestId:", requestId)
-        console.log("User from token:", user)
-
         const [serviceRequest, adminSettings] = await Promise.all([
             serviceRequestModel.findOne({
                 _id: requestId,
